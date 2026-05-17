@@ -97,7 +97,7 @@ class Metric(Base):
     value = Column(DECIMAL(10, 2), nullable=False)
     unit = Column(String(20))
     host = Column(String(100), default='localhost', index=True)
-    meta_data = Column('metadata', JSON)  # Renamed from metadata to avoid conflict
+    meta_data = Column('metadata', JSON)
     created_at = Column(DateTime(6), default=func.now())
     
     __table_args__ = (
@@ -124,9 +124,6 @@ class Incident(Base):
     assigned_to = Column(String(100))
     resolution_notes = Column(Text)
     updated_at = Column(DateTime(6), default=func.now(), onupdate=func.now())
-    
-    # Relationship
-    alerts = relationship("AlertHistory", back_populates="incident")
     
     __table_args__ = (
         Index('idx_status_severity', 'status', 'severity'),
@@ -195,12 +192,9 @@ class AlertRule(Base):
     enabled = Column(Boolean, default=True, index=True)
     cooldown_seconds = Column(Integer, default=600)
     channels = Column(JSON)
-    meta_data = Column('metadata', JSON)  # Renamed
+    meta_data = Column('metadata', JSON)
     created_at = Column(DateTime(6), default=func.now())
     updated_at = Column(DateTime(6), default=func.now(), onupdate=func.now())
-    
-    # Relationship
-    alert_history = relationship("AlertHistory", back_populates="rule")
     
     def __repr__(self):
         return f"<AlertRule(id={self.rule_id}, name={self.name}, enabled={self.enabled})>"
@@ -218,12 +212,8 @@ class AlertHistory(Base):
     message = Column(Text, nullable=False)
     channels_notified = Column(JSON)
     incident_id = Column(BigInteger, ForeignKey('incidents.id', ondelete='SET NULL'), index=True)
-    meta_data = Column('metadata', JSON)  # Renamed
+    meta_data = Column('metadata', JSON)
     created_at = Column(DateTime(6), default=func.now())
-    
-    # Relationships
-    incident = relationship("Incident", back_populates="alerts")
-    rule = relationship("AlertRule", back_populates="alert_history")
     
     def __repr__(self):
         return f"<AlertHistory(id={self.alert_id}, rule={self.rule_id}, severity={self.severity.value})>"
@@ -243,7 +233,7 @@ class KPISnapshot(Base):
         nullable=False,
         index=True
     )
-    meta_data = Column('metadata', JSON)  # Renamed
+    meta_data = Column('metadata', JSON)
     created_at = Column(DateTime(6), default=func.now())
     
     __table_args__ = (

@@ -5,7 +5,7 @@ Handles MySQL connections with connection pooling
 
 import os
 import logging
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import QueuePool
 from contextlib import contextmanager
@@ -34,7 +34,7 @@ class DatabaseManager:
             db_user = os.getenv('DB_USER', 'monitor_user')
             db_password = os.getenv('DB_PASSWORD', 'password')
             db_host = os.getenv('DB_HOST', 'mysql')
-            db_port = os.getenv('DB_PORT', '3306')
+            db_port = os.getenv('DB_PORT', '3307')
             db_name = os.getenv('DB_NAME', 'terminal_monitor')
             
             database_url = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
@@ -117,7 +117,7 @@ class DatabaseManager:
         """Execute raw SQL query"""
         try:
             with self.engine.connect() as connection:
-                result = connection.execute(sql, params or {})
+                result = connection.execute(text(sql), params or {})
                 connection.commit()
                 return result
         except Exception as e:
@@ -128,7 +128,7 @@ class DatabaseManager:
         """Check if database connection is healthy"""
         try:
             with self.engine.connect() as connection:
-                connection.execute("SELECT 1")
+                connection.execute(text("SELECT 1"))
             return True
         except Exception as e:
             logger.error(f"Database health check failed: {e}")
