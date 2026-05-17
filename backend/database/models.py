@@ -97,7 +97,7 @@ class Metric(Base):
     value = Column(DECIMAL(10, 2), nullable=False)
     unit = Column(String(20))
     host = Column(String(100), default='localhost', index=True)
-    metadata = Column(JSON)
+    meta_data = Column('metadata', JSON)  # Renamed from metadata to avoid conflict
     created_at = Column(DateTime(6), default=func.now())
     
     __table_args__ = (
@@ -195,7 +195,7 @@ class AlertRule(Base):
     enabled = Column(Boolean, default=True, index=True)
     cooldown_seconds = Column(Integer, default=600)
     channels = Column(JSON)
-    metadata = Column(JSON)
+    meta_data = Column('metadata', JSON)  # Renamed
     created_at = Column(DateTime(6), default=func.now())
     updated_at = Column(DateTime(6), default=func.now(), onupdate=func.now())
     
@@ -218,7 +218,7 @@ class AlertHistory(Base):
     message = Column(Text, nullable=False)
     channels_notified = Column(JSON)
     incident_id = Column(BigInteger, ForeignKey('incidents.id', ondelete='SET NULL'), index=True)
-    metadata = Column(JSON)
+    meta_data = Column('metadata', JSON)  # Renamed
     created_at = Column(DateTime(6), default=func.now())
     
     # Relationships
@@ -243,7 +243,7 @@ class KPISnapshot(Base):
         nullable=False,
         index=True
     )
-    metadata = Column(JSON)
+    meta_data = Column('metadata', JSON)  # Renamed
     created_at = Column(DateTime(6), default=func.now())
     
     __table_args__ = (

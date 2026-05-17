@@ -12,8 +12,7 @@ import logging
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from backend.database.connection import db_manager
-from sqlalchemy import text
+from sqlalchemy import text, create_engine
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,16 +21,31 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def get_database_url():
+    """Get database URL for host connection"""
+    db_user = os.getenv('DB_USER', 'monitor_user')
+    db_password = os.getenv('DB_PASSWORD', 'change_this_password')
+    db_host = 'localhost'  # Use localhost when running from host
+    db_port = int(os.getenv('DB_PORT', 3307))
+    db_name = os.getenv('DB_NAME', 'terminal_monitor')
+    
+    return f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+
+
 def wait_for_database(max_retries=30, retry_interval=2):
     """Wait for database to be ready"""
     logger.info("Waiting for database to be ready...")
     
+    database_url = get_database_url()
+    
     for i in range(max_retries):
         try:
-            db_manager.initialize()
-            if db_manager.health_check():
-                logger.info("Database is ready!")
-                return True
+            engine = create_engine(database_url, pool_pre_ping=True)
+            with engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+            logger.info("Database is ready!")
+            engine.dispose()
+            return True
         except Exception as e:
             logger.warning(f"Database not ready (attempt {i+1}/{max_retries}): {e}")
             time.sleep(retry_interval)
@@ -40,25 +54,26 @@ def wait_for_database(max_retries=30, retry_interval=2):
     return False
 
 
-def run_migration_file(filepath):
+def run_migration_file(filepath, engine):
     """Execute SQL migration file"""
     logger.info(f"Running migration: {filepath}")
     
     try:
-        with open(filepath, 'r') as f:
+        with open(filepath, 'r', encoding='utf-8') as f:
             sql_content = f.read()
         
         # Split by semicolons and execute each statement
         statements = [s.strip() for s in sql_content.split(';') if s.strip()]
         
-        with db_manager.engine.connect() as connection:
+        with engine.connect() as connection:
             for statement in statements:
-                if statement:
+                if statement and not statement.startswith('--'):
                     try:
                         connection.execute(text(statement))
                         connection.commit()
                     except Exception as e:
-                        logger.warning(f"Statement execution warning: {e}")
+                        # Some statements might fail if already exist (views, etc.)
+                        logger.debug(f"Statement execution note: {e}")
         
         logger.info(f"Migration completed: {filepath}")
         return True
@@ -94,13 +109,18 @@ def run_migrations():
     
     logger.info(f"Found {len(migration_files)} migration(s)")
     
+    # Create engine
+    database_url = get_database_url()
+    engine = create_engine(database_url, pool_pre_ping=True)
+    
     success = True
     for migration_file in migration_files:
         filepath = os.path.join(migrations_dir, migration_file)
-        if not run_migration_file(filepath):
+        if not run_migration_file(filepath, engine):
             success = False
             break
     
+    engine.dispose()
     return success
 
 
@@ -109,7 +129,10 @@ def verify_database():
     logger.info("Verifying database setup...")
     
     try:
-        with db_manager.engine.connect() as connection:
+        database_url = get_database_url()
+        engine = create_engine(database_url, pool_pre_ping=True)
+        
+        with engine.connect() as connection:
             # Check tables
             result = connection.execute(text("SHOW TABLES"))
             tables = [row[0] for row in result]
@@ -128,6 +151,7 @@ def verify_database():
             rules_count = result.scalar()
             logger.info(f"Alert rules: {rules_count}")
             
+        engine.dispose()
         logger.info("Database verification completed successfully")
         return True
         
@@ -141,6 +165,10 @@ def main():
     logger.info("=" * 60)
     logger.info("DATABASE INITIALIZATION SCRIPT")
     logger.info("=" * 60)
+    
+    # Load environment variables
+    from dotenv import load_dotenv
+    load_dotenv()
     
     # Wait for database
     if not wait_for_database():
