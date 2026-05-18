@@ -1,242 +1,414 @@
-# 🚢 Intelligent Terminal Operations Monitoring System
+# Terminal Monitoring System
 
-> **Automated System Monitoring Dashboard with Incident Detection for Port Terminal Operations**
+A production-ready real-time monitoring system for port terminal operations. Tracks 89+ equipment units with automated alerting, interactive dashboards, and full Docker deployment.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![React](https://img.shields.io/badge/react-18.2+-61DAFB.svg)](https://reactjs.org/)
+
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+
+[![React 18](https://img.shields.io/badge/react-18.2-61DAFB.svg)](https://reactjs.org/)
+
 [![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg)](https://www.docker.com/)
 
-## 📋 Project Context
+## 📋 Overview
 
-This project was developed to demonstrate proficiency in **intelligent incident detection**, **backup status monitoring**, and **interactive business dashboards** — aligned with APM Terminals Tangier's IT internship requirements for their world-class automated container terminal operations.
+A full-stack monitoring system demonstrating real-time data processing, equipment simulation, alerting, and containerized deployment. Built as a portfolio project to showcase modern DevOps and full-stack development practices.
 
-**APM Terminals MedPort Tangier** is one of the most technologically advanced port terminals globally, featuring:
-- 20+ remote-controlled Ship-to-Shore (STS) cranes
-- 42 Automated Rail-Mounted Gantry (ARMG) cranes  
-- 30+ shuttle carriers for container transport
-- Fully automated gate systems
+**Key Capabilities:**
 
-This monitoring system simulates real-world IT infrastructure monitoring with a focus on port terminal KPIs and equipment tracking.
+- Real-time monitoring of system metrics and equipment status
 
----
+- Automated incident detection with email notifications
 
-## ✨ Key Features
+- Interactive dashboard with live data visualization
 
-### 🔍 **Intelligent Incident Detection**
-- Real-time system metrics monitoring (CPU, memory, disk, network)
-- Threshold-based anomaly detection with configurable rules
-- Multi-channel alerting (Email, Slack, SMS simulation)
-- Automated incident logging and severity classification
+- RESTful API with 11 endpoints
 
-### 💾 **Backup Status Monitoring**
-- Automated database backup verification
-- File integrity checks (checksums, restore tests)
-- Backup success rate tracking
-- Storage capacity monitoring
+- One-command Docker deployment
 
-### 📊 **Interactive KPI Dashboards**
-- **Equipment Monitoring**: STS cranes, ARMG cranes, shuttle carriers
-- **Operational KPIs**: Vessel turnaround time, crane productivity, gate throughput
-- **System Health**: Uptime, response time, error rates
-- **Real-time Updates**: WebSocket-powered live data streaming
+## 🎯 Features
 
-### 🏗️ **Port Terminal Equipment Simulation**
-- Realistic equipment behavior modeling
-- Random fault injection for incident testing
-- Operational patterns (peak hours, seasonal trends)
-- Equipment utilization tracking
+### Real-Time Monitoring
 
----
+- System metrics: CPU, Memory, Disk, Network
 
-## 🏛️ System Architecture
-┌────────────────────────────────────────────────────────┐
-│              React Dashboard (Port 3000)                │
-│  Equipment Status | KPI Analytics | Alert Management   │
-└──────────────────────┬─────────────────────────────────┘
-│ HTTP/WebSocket
-┌──────────────────────▼─────────────────────────────────┐
-│              Flask REST API (Port 5000)                 │
-│  /api/metrics | /api/alerts | /api/equipment           │
-└──────────────────────┬─────────────────────────────────┘
-│
-┌──────────────┼──────────────┐
-│              │              │
-┌───────▼──────┐ ┌────▼─────┐ ┌─────▼──────┐
-│ MySQL DB     │ │  Redis   │ │  Monitor   │
-│ (Port 3306)  │ │ (6379)   │ │  Service   │
-└──────────────┘ └──────────┘ └────────────┘
+- Equipment simulation: 89 units (cranes, carriers, gates)
 
+- 470+ metrics collected every 10 seconds
 
----
+- Automatic data cleanup (7-day retention)
+
+### Alert System
+
+- Threshold-based monitoring
+
+- Configurable alert rules stored in database
+
+- Email notifications via SMTP (Gmail)
+
+- Automatic incident creation and tracking
+
+- Multiple severity levels: CRITICAL, HIGH, MEDIUM, LOW
+
+### Interactive Dashboard
+
+- Real-time KPI cards (CPU, Memory, Disk, Equipment %)
+
+- Live line charts with 30-point history
+
+- Equipment summary by type
+
+- Paginated equipment status table
+
+- Auto-refresh every 10-15 seconds
+
+### REST API
+
+- 11 endpoints for metrics, equipment, and incidents
+
+- Time-range filtering and aggregation
+
+- Equipment filtering by type and status
+
+- Health check endpoint
+
+- CORS-enabled for frontend integration
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker & Docker Compose
-- Git
+
+- Docker 20.10+
+
+- Docker Compose 2.0+
+
 - 4GB RAM minimum
-- 10GB free disk space
+
+- 10GB disk space
 
 ### Installation
 
-1. **Clone the repository**
 ```bash
-git clone https://github.com/YOUR_USERNAME/terminal-monitoring-system.git
+
+# Clone the repository
+
+git clone https://github.com/MounimNadir/terminal-monitoring-system.git
+
 cd terminal-monitoring-system
-```
 
-2. **Configure environment**
-```bash
-cp .env.example .env
-# Edit .env with your credentials
-nano .env
-```
+# Start all services (builds and starts 5 containers)
 
-3. **Start all services**
-```bash
 docker-compose up -d
+
+# Wait 30 seconds for initialization
+
+sleep 30
+
+# Access the system
+
+open http://localhost:8080
+
 ```
 
-4. **Access the dashboard**
-- Dashboard: http://localhost:3000
-- API: http://localhost:5000
-- API Docs: http://localhost:5000/docs
+**That's it!** The system is now running with:
 
-5. **View logs**
+- Dashboard at http://localhost:8080
+
+- API at http://localhost:5000
+
+- MySQL at localhost:3307
+
+- Redis at localhost:6379
+
+### Stopping the System
+
 ```bash
-docker-compose logs -f
+
+# Stop all services
+
+docker-compose down
+
+# Stop and remove all data (WARNING: deletes database)
+
+docker-compose down -v
+
 ```
 
----
+## 🏗️ Architecture
+┌─────────────────────────────────────────────────┐
+│              Docker Host                        │
+│                                                 │
+│  ┌──────────────┐      ┌──────────────┐         │
+│  │  Dashboard   │◄─────┤     API      │         │
+│  │  (Nginx)     │      │   (Flask)    │         │
+│  │  Port 8080   │      │   Port 5000  │         │
+│  └──────────────┘      └───────┬──────┘         │
+│                                 │               │
+│  ┌──────────────┐      ┌───────▼──────┐         │
+│  │  Monitoring  │─────►│    MySQL     │         │
+│  │  (Python)    │      │   Port 3307  │         │
+│  └──────┬───────┘      └──────────────┘         │
+│         │                                       │
+│         │              ┌──────────────┐         │
+│         └─────────────►│    Redis     │         │
+│                        │   Port 6379  │         │
+│                        └──────────────┘         │
+└─────────────────────────────────────────────────┘
 
-## 📊 Port Terminal KPIs Tracked
 
-| KPI Category | Metrics | Target |
-|--------------|---------|--------|
-| **Equipment** | Crane moves/hour | 30-40 |
-| **Equipment** | Utilization rate | >85% |
-| **Vessel Ops** | Turnaround time | <24 hours |
-| **Yard Ops** | Container dwell time | <5 days |
-| **Gate Ops** | Truck throughput | >60/hour |
-| **System** | Backup success rate | >99% |
-| **System** | API response time | <200ms |
+**Services:**
+- **MySQL 8.0**: Database with 8 tables, 4 views
+- **Redis 7**: Caching layer
+- **Monitoring Service**: Python-based data collector
+- **API Service**: Flask REST API
+- **Dashboard**: React + Nginx production build
 
----
-
-## 🛠️ Technology Stack
+## 🔧 Technology Stack
 
 ### Backend
-- **Python 3.11+** - Core language
+- **Python 3.12** - Core language
 - **Flask** - REST API framework
+- **SQLAlchemy** - ORM for database operations
+- **PyMySQL** - MySQL database driver
 - **psutil** - System metrics collection
-- **APScheduler** - Task scheduling
-- **PyMySQL** - Database connector
-- **Redis** - Caching & real-time data
+- **smtplib** - Email notifications
 
 ### Frontend
-- **React 18+** - UI framework
-- **Material-UI** - Component library
-- **Chart.js / Recharts** - Data visualization
-- **Socket.IO Client** - Real-time updates
-- **React Query** - Data fetching
+- **React 18** - UI framework
+- **TypeScript** - Type-safe JavaScript
+- **Material-UI (MUI)** - Component library
+- **Recharts** - Data visualization
+- **Axios** - HTTP client
 
 ### Infrastructure
-- **Docker & Docker Compose** - Containerization
 - **MySQL 8.0** - Relational database
-- **Nginx** - Reverse proxy & static files
+- **Redis 7** - In-memory cache
+- **Docker & Docker Compose** - Containerization
+- **Nginx** - Reverse proxy & static file server
 
----
+## 📡 API Endpoints
 
-## 📁 Project Structure
-terminal-monitoring-system/
-├── backend/              # Monitoring service
-│   ├── collectors/       # System & equipment monitors
-│   ├── alerts/           # Alert management
-│   ├── database/         # Models & migrations
-│   └── utils/            # Helper functions
-├── api/                  # Flask REST API
-│   ├── routes/           # API endpoints
-│   ├── websocket/        # Real-time communication
-│   └── middleware/       # Auth & rate limiting
-├── frontend/             # React dashboard
-│   └── src/
-│       ├── components/   # UI components
-│       ├── pages/        # Application pages
-│       └── services/     # API clients
-├── config/               # Configuration files
-├── scripts/              # Utility scripts
-├── docs/                 # Documentation
-└── tests/                # Test suites
+| Method |         Endpoint             | Description                        |
+|--------|------------------------------|------------------------------------|
+| GET    | `/health`                    | API health check                   |
+| GET    | `/api/metrics/current`       | Latest metrics (last minute)       |
+| GET    | `/api/metrics/historical`    | Historical metrics with time range |
+| GET    | `/api/metrics/summary`       | Aggregated metrics (avg/max/min)   |
+| GET    | `/api/metrics/types`         | Available metric types             |
+| GET    | `/api/equipment/status`      | All equipment with filters         |
+| GET    | `/api/equipment/summary`     | Equipment summary by type          |
+| GET    | `/api/equipment/<id>`        | Specific equipment details         |
+| GET    | `/api/equipment/types`       | Equipment types list               |
+| GET    | `/api/incidents/active`      | Active incidents                   |
+| GET    | `/api/incidents/all`         | All incidents with filters         |
 
----
 
-## 🧪 Testing
-
+**Example Request:**
 ```bash
-# Backend tests
-cd backend
-python -m pytest tests/ -v --cov
-
-# Frontend tests
-cd frontend
-npm test -- --coverage
-
-# Integration tests
-docker-compose -f docker-compose.test.yml up --abort-on-container-exit
+curl http://localhost:5000/api/equipment/summary
 ```
 
----
+## 🗄️ Database Schema
 
-## 📖 Documentation
+### Tables (8)
+- **metrics** - Time-series system and equipment metrics
+- **equipment_status** - Current state of all equipment
+- **incidents** - Alert incidents history
+- **backup_logs** - System backup records
+- **alert_rules** - Configurable alert thresholds
+- **alert_history** - Alert trigger history
+- **kpi_snapshots** - Daily KPI summaries
+- **system_config** - System configuration
 
-- [Architecture Overview](docs/ARCHITECTURE.md)
-- [API Documentation](docs/API_DOCUMENTATION.md)
-- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
-- [User Manual](docs/USER_MANUAL.md)
+### Views (4)
+- **v_active_incidents** - Currently open incidents
+- **v_equipment_summary** - Equipment summary by type
+- **v_recent_backups** - Recent backup status
+- **v_kpi_current** - Current KPI values
 
----
+## 🚨 Alert System
 
-## 🎯 Future Enhancements
+### Production Alert Rules
 
-- [ ] Machine learning anomaly detection
-- [ ] Predictive maintenance alerts
-- [ ] Mobile app (React Native)
-- [ ] Integration with real Terminal Operating Systems (TOS)
-- [ ] Advanced analytics with Grafana
-- [ ] Multi-tenant support
-- [ ] RBAC (Role-Based Access Control)
+| Alert            | Condition | Severity |
+|------------------|-----------|----------|
+| CPU Critical     | > 90%     | CRITICAL |
+| CPU High         | > 80%     | HIGH     |
+| Memory Critical  | > 95%     | CRITICAL |
+| Memory High      | > 90%     | HIGH     |
+| Disk Critical    | > 95%     | CRITICAL |
 
----
+### Email Configuration
 
-## 👨‍💻 Author
+Edit `.env` file:
+```env
+EMAIL_ALERTS_ENABLED=true
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-16-char-app-password
+ALERT_FROM_EMAIL=monitoring@terminal.com
+ALERT_TO_EMAILS=recipient@example.com
+```
 
-**Your Name**
-- GitHub: [@your-username](https://github.com/your-username)
-- LinkedIn: [Your Name](https://linkedin.com/in/your-profile)
-- Email: your.email@example.com
+**Getting Gmail App Password:**
+1. Go to https://myaccount.google.com/apppasswords
+2. Enable 2-Step Verification
+3. Generate app password for "Mail"
+4. Copy 16-character password to `.env`
 
----
+## 🛠️ Development
 
-## 📄 License
+### Project Structure
+terminal-monitoring-system/
+├── backend/                # Monitoring service
+│   ├── collectors/         # Metrics collectors
+│   ├── database/           # Models & connection
+│   ├── alerts/             # Alert management
+│   └── utils/              # Utility functions
+├── api/                    # Flask REST API
+│   └── routes/             # API endpoints
+├── frontend/               # React dashboard
+│   └── src/
+│       ├── components/     # React components
+│       ├── services/       # API client
+│       └── types/          # TypeScript types
+├── docker-compose.yml      # Docker orchestration
+└── .env                    # Environment variables
+
+### Running Locally (Without Docker)
+
+**Backend:**
+```bash
+cd backend
+pip install -r requirements.txt
+python main.py
+```
+
+**API:**
+```bash
+cd api
+pip install -r ../backend/requirements.txt
+pip install flask flask-cors
+python app.py
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## 📊 System Performance
+
+- **Metrics Collection**: 470 metrics per 10-second cycle
+- **Database Writes**: ~1.5 MB/hour
+- **Storage Growth**: ~36 MB/day (auto-cleanup after 7 days)
+- **API Response Time**: 50-200ms
+- **Dashboard Load Time**: 2-3 seconds
+
+## 🔍 Monitoring
+
+### View Logs
+```bash
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f monitoring
+docker-compose logs -f api
+docker-compose logs -f dashboard
+```
+
+### Check Service Status
+```bash
+docker-compose ps
+```
+
+### Access Database
+```bash
+docker exec -it terminal-mysql mysql -u root -p
+# Password: rootpassword (default)
+```
+
+## 🐛 Troubleshooting
+
+### Dashboard shows no data
+```bash
+# Check API health
+curl http://localhost:5000/health
+
+# Check API data
+curl http://localhost:5000/api/equipment/summary
+
+# Hard refresh browser (Ctrl+F5)
+```
+
+### Monitoring service not collecting
+```bash
+# Check logs
+docker-compose logs monitoring
+
+# Verify database connection
+docker exec terminal-monitoring env | grep DB_
+```
+
+### Port conflicts
+Edit `docker-compose.yml`:
+```yaml
+# Change dashboard port
+ports:
+  - "8081:80"  # Change 8080 to 8081
+
+# Change MySQL port
+ports:
+  - "3308:3306"  # Change 3307 to 3308
+```
+
+## 📈 Equipment Simulated
+
+- **12 STS Cranes** - Ship-to-Shore cranes at 3 berths
+- **42 ARMG Cranes** - Automated Rail-Mounted Gantry cranes in 7 yard blocks
+- **30 Shuttle Carriers** - Container transport in 5 zones
+- **5 Gate Systems** - 3 entry gates, 2 exit gates
+
+Each equipment unit has:
+- Unique ID and location
+- Operational status (OPERATIONAL, FAULT, MAINTENANCE, IDLE)
+- Utilization percentage
+- Current task
+- Realistic fault injection (random failures)
+
+## 🎓 Learning Outcomes
+
+This project demonstrates:
+- ✅ Full-stack development (Python backend, React frontend)
+- ✅ RESTful API design and implementation
+- ✅ Real-time data processing and visualization
+- ✅ Database design and optimization
+- ✅ Docker containerization and orchestration
+- ✅ Alert systems and notifications
+- ✅ System monitoring and metrics collection
+- ✅ Production-ready deployment practices
+
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
+## 👨‍💻 Author
+
+**Mounim Nadir**
+- GitHub: [@MounimNadir](https://github.com/MounimNadir)
+- LinkedIn: [Mounim Nadir](https://www.linkedin.com/in/mounimnadir/)
+- Email: mounimnadir7@gmail.com
 
 ## 🙏 Acknowledgments
 
-- Inspired by **APM Terminals Tangier MedPort** operations
-- Port terminal KPIs based on industry standards
-- Built for the APM Terminals IT Internship application
-
----
-
-## 📞 Support
-
-For questions or issues, please open an issue on GitHub or contact the author.
+- Built with modern web technologies and DevOps best practices
+- Inspired by industrial IoT monitoring systems
+- Created as a portfolio project to demonstrate full-stack capabilities
 
 ---
 
 **⭐ If you find this project useful, please consider giving it a star!**
-

@@ -107,7 +107,7 @@ const Dashboard: React.FC = () => {
         Terminal Monitoring Dashboard
       </Typography>
       <Typography variant="subtitle1" color="textSecondary" gutterBottom sx={{ mb: 3 }}>
-        APM Terminals MedPort Tangier - Real-time Operations
+        Real-time Equipment and System Monitoring
       </Typography>
 
       {/* KPI Cards */}
