@@ -153,8 +153,7 @@ docker-compose down -v
 │         |-------------►│    Redis     │         │
 │                        │   Port 6379  │         │
 │                        └--------------┘         │
-|
-
+![Architecture Diagram](docs/architecture.png)
 
 **Services:**
 - **MySQL 8.0**: Database with 8 tables, 4 views
