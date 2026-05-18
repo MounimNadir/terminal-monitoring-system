@@ -14,6 +14,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from backend.collectors.system_monitor import SystemMetricsCollector
 from backend.collectors.equipment_simulator import EquipmentSimulator
+from backend.alerts.alert_manager import AlertManager
+from backend.alerts.channels.email_notifier import EmailNotifier
 from backend.database.connection import db_manager
 from backend.database.models import Metric, EquipmentStatusModel
 from backend.utils.config import Config
@@ -166,6 +168,11 @@ def main():
             num_shuttle_carriers=Config.NUM_SHUTTLE_CARRIERS
         )
         logger.info("[OK] Equipment simulator initialized")
+        
+        # Initialize alert system
+        alert_manager = AlertManager()
+        email_notifier = EmailNotifier()
+        logger.info("[OK] Alert system initialized")
     
     logger.info("[OK] Monitoring service started")
     logger.info("="*60)
