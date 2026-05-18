@@ -17,7 +17,7 @@ class APIConfig:
     # Database
     DB_USER = os.getenv('DB_USER', 'monitor_user')
     DB_PASSWORD = os.getenv('DB_PASSWORD', 'change_this_password')
-    DB_HOST = 'localhost'  # Use localhost for host machine
+    DB_HOST = os.getenv('DB_HOST', 'localhost')
     DB_PORT = int(os.getenv('DB_PORT', 3307))
     DB_NAME = os.getenv('DB_NAME', 'terminal_monitor')
     
@@ -26,7 +26,7 @@ class APIConfig:
     SQLALCHEMY_ECHO = False
     
     # Redis
-    REDIS_HOST = 'localhost'
+    REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
     REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
     REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
     

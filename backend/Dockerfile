@@ -1,6 +1,5 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
-# Set working directory
 WORKDIR /app
 
 # Install system dependencies
@@ -12,16 +11,16 @@ RUN apt-get update && apt-get install -y \
 
 # Copy requirements
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+# Set Python path to current directory
+ENV PYTHONPATH=/app
 
-# Run the monitoring service
-CMD ["python", "main.py"]
+# Create logs directory
+RUN mkdir -p /app/logs
+
+# Run the monitoring service (from /app, imports work as 'collectors.system_monitor')
+CMD ["python", "-u", "main.py"]

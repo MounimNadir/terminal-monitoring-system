@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -9,15 +9,24 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# Copy backend requirements
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir flask flask-cors
 
-COPY . .
+# Copy backend code (API needs it)
+COPY backend ./backend
 
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV FLASK_APP=app.py
+# Copy API code
+COPY api ./api
 
+# Set Python path
+ENV PYTHONPATH=/app
+
+WORKDIR /app
+
+# Expose port
 EXPOSE 5000
 
-CMD ["python", "app.py"]
+# Run API
+CMD ["python", "-u", "api/app.py"]

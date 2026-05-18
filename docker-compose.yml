@@ -1,105 +1,129 @@
+
+
 services:
   # MySQL Database
   mysql:
     image: mysql:8.0
-    container_name: terminal_mysql
-    restart: unless-stopped
+    container_name: terminal-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-terminal_monitor}
+      MYSQL_USER: ${DB_USER:-monitor_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change_this_password}
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./backend/database/migrations:/docker-entrypoint-initdb.d
-      - ./backups:/backups
+      - ./backend/database/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
     networks:
-      - terminal_network
+      - terminal-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: terminal_redis
-    restart: unless-stopped
+    container_name: terminal-redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     networks:
-      - terminal_network
+      - terminal-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   # Monitoring Service
-  monitor-service:
+  monitoring:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: terminal_monitor
-    restart: unless-stopped
-    env_file:
-      - .env
+    container_name: terminal-monitoring
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-monitor_user}
+      DB_PASSWORD: ${DB_PASSWORD:-change_this_password}
+      DB_NAME: ${DB_NAME:-terminal_monitor}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      COLLECTION_INTERVAL: ${COLLECTION_INTERVAL:-10}
+      ENABLE_EQUIPMENT_SIMULATION: ${ENABLE_EQUIPMENT_SIMULATION:-true}
+      NUM_STS_CRANES: ${NUM_STS_CRANES:-12}
+      NUM_ARMG_CRANES: ${NUM_ARMG_CRANES:-42}
+      NUM_SHUTTLE_CARRIERS: ${NUM_SHUTTLE_CARRIERS:-30}
+      EMAIL_ALERTS_ENABLED: ${EMAIL_ALERTS_ENABLED:-false}
+      SMTP_SERVER: ${SMTP_SERVER:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      ALERT_FROM_EMAIL: ${ALERT_FROM_EMAIL:-monitoring@terminal.com}
+      ALERT_TO_EMAILS: ${ALERT_TO_EMAILS:-}
     volumes:
-      - ./backend:/app
-      - ./config:/app/config
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./logs:/app/logs
     networks:
-      - terminal_network
+      - terminal-network
+    restart: unless-stopped
 
-  # Flask API
+  # API Service
   api:
     build:
-      context: ./api
-      dockerfile: Dockerfile
-    container_name: terminal_api
-    restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "5000:5000"
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: terminal-api
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./api:/app
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-monitor_user}
+      DB_PASSWORD: ${DB_PASSWORD:-change_this_password}
+      DB_NAME: ${DB_NAME:-terminal_monitor}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      FLASK_ENV: ${FLASK_ENV:-production}
+    ports:
+      - "5000:5000"
     networks:
-      - terminal_network
+      - terminal-network
+    restart: unless-stopped
 
-  # React Dashboard
+  # Frontend Dashboard
   dashboard:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        REACT_APP_API_URL: ${REACT_APP_API_URL}
-        REACT_APP_WS_URL: ${REACT_APP_WS_URL}
-    container_name: terminal_dashboard
-    restart: unless-stopped
-    ports:
-      - "3000:80"
+    container_name: terminal-dashboard
     depends_on:
       - api
+    ports:
+      - "8080:80"
     networks:
-      - terminal_network
+      - terminal-network
+    restart: unless-stopped
 
 volumes:
   mysql_data:
     driver: local
+  redis_data:
+    driver: local
 
 networks:
-  terminal_network:
+  terminal-network:
     driver: bridge

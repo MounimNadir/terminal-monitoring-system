@@ -34,7 +34,7 @@ class DatabaseManager:
             db_user = os.getenv('DB_USER', 'monitor_user')
             db_password = os.getenv('DB_PASSWORD', 'password')
             db_host = os.getenv('DB_HOST', 'mysql')
-            db_port = os.getenv('DB_PORT', '3307')
+            db_port = os.getenv('DB_PORT', '3306')
             db_name = os.getenv('DB_NAME', 'terminal_monitor')
             
             database_url = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
@@ -145,6 +145,7 @@ class DatabaseManager:
 
 # Global database manager instance
 db_manager = DatabaseManager()
+db_manager.initialize()  # Auto-initialize on import
 
 
 # Convenience functions

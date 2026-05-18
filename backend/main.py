@@ -12,14 +12,14 @@ from datetime import datetime, timedelta
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from backend.collectors.system_monitor import SystemMetricsCollector
-from backend.collectors.equipment_simulator import EquipmentSimulator
-from backend.alerts.alert_manager import AlertManager
-from backend.alerts.channels.email_notifier import EmailNotifier
-from backend.database.connection import db_manager
-from backend.database.models import Metric, EquipmentStatusModel
-from backend.utils.config import Config
-from backend.utils.logger import setup_logger
+from collectors.system_monitor import SystemMetricsCollector
+from collectors.equipment_simulator import EquipmentSimulator
+from alerts.alert_manager import AlertManager
+from alerts.channels.email_notifier import EmailNotifier
+from database.connection import db_manager
+from database.models import Metric, EquipmentStatusModel
+from utils.config import Config
+from utils.logger import setup_logger
 from sqlalchemy import text
 
 # Setup logger
@@ -37,8 +37,14 @@ def signal_handler(signum, frame):
 
 
 def get_database_url_for_host():
-    """Get database URL for running from host machine"""
-    return f"mysql+pymysql://{Config.DB_USER}:{Config.DB_PASSWORD}@localhost:{Config.DB_PORT}/{Config.DB_NAME}"
+    """Get database URL (reads from environment in Docker)"""
+    import os
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_port = os.getenv('DB_PORT', str(Config.DB_PORT))
+    db_user = os.getenv('DB_USER', Config.DB_USER)
+    db_password = os.getenv('DB_PASSWORD', Config.DB_PASSWORD)
+    db_name = os.getenv('DB_NAME', Config.DB_NAME)
+    return f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
 
 def save_metrics_to_db(metrics_list):

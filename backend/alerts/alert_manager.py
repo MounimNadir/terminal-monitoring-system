@@ -5,8 +5,8 @@ Monitors metrics and triggers alerts based on rules
 import logging
 from datetime import datetime
 from typing import List, Dict
-from backend.database.models import Incident
-from backend.database.connection import db_manager
+from database.models import Incident
+from database.connection import db_manager
 from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
