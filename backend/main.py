@@ -199,6 +199,18 @@ def main():
                 save_metrics_to_db(equipment_metrics)
                 logger.info(f"  Collected {len(equipment_metrics)} equipment metrics")
                 logger.info(f"  Updated {len(equipment_status)} equipment statuses")
+                
+                # Check for alerts
+                all_metrics_list = system_metrics + equipment_metrics
+                triggered_alerts = alert_manager.check_alerts(all_metrics_list)
+                
+                if triggered_alerts:
+                    logger.info(f"  Triggered {len(triggered_alerts)} alerts")
+                    for alert in triggered_alerts:
+                        # Create incident
+                        incident_id = alert_manager.create_incident(alert)
+                        # Send email notification
+                        email_notifier.send_alert(alert)
             
             # Periodic cleanup (every 100 iterations)
             if iteration % 100 == 0:
